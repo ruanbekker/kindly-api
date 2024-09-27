@@ -10,6 +10,7 @@
 - **Destroy Clusters**: Tear down clusters when they are no longer needed.
 
 ### Requirements:
+
 - Docker
 - Kind
 - Python 3.11+
@@ -68,7 +69,7 @@ Ensure you have Docker and Docker Compose installed and running.
 ### 3. Build and Run the Application:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 This will start the Flask API on port `5000`.
@@ -86,7 +87,37 @@ curl -X POST http://localhost:5000/clusters/deploy
 To view logs from the running containers, use:
 
 ```bash
-docker-compose logs -f
+docker compose logs -f
+```
+
+### 6. Access using Kubectl:
+
+Dump the kubeconfig using the cluster id:
+
+```bash
+curl -s http://localhost:5000/clusters/kubeconfig/kind-8qta2 | jq -r '.kubeconfig' > /tmp/.config
+```
+
+Set the `KUBECONFIG` environment variable to the file:
+
+```bash
+export KUBECONFIG=/tmp/.config
+```
+
+Access the cluster using kubectl:
+
+```bash
+kubectl get nodes
+# NAME                       STATUS   ROLES           AGE   VERSION
+# kind-8qta2-control-plane   Ready    control-plane   39s   v1.27.3
+```
+
+### 7. Destroy the Cluster:
+
+Destroy the cluster by providing the clusterid:
+
+```bash
+curl -XDELETE http://localhost:5000/clusters/kubeconfig/kind-8qta2
 ```
 
 ---
