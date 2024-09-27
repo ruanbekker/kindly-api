@@ -1,9 +1,14 @@
 version: '3.8'
 
 services:
-  flask-api:
+  kindly-api:
     build: .
-    container_name: flask-api
+    container_name: kindly-api
     restart: unless-stopped
+    privileged: true
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "5000:5000"
