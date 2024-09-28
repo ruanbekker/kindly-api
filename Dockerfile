@@ -11,15 +11,23 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     && apt-get clean
 
+ARG DOCKER_VERSION=23.0.1
+ARG KIND_VERSION=0.20.0
+ARG KUBECTL_VERSION=1.31.0
+
+ENV DOCKER_VERSION=$DOCKER_VERSION
+ENV KIND_VERSION=$KIND_VERSION
+ENV KUBECTL_VERSION=$KUBECTL_VERSION
+
 # Install Docker CLI to communicate with dind
-RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
+COPY --from=docker:23.0.1-dind /usr/local/bin/docker /usr/local/bin/docker
 
 # Install kind
-RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64 \
-    && chmod +x ./kind && mv ./kind /usr/local/bin/kind
+RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v$KIND_VERSION/kind-linux-amd64 \
+    && install -o root -g root -m 0755 kind /usr/local/bin/kind
 
 # Install kubectl
-RUN curl -LO https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl \
+RUN curl -LO https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/amd64/kubectl \
     && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 # Set the working directory
