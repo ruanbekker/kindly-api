@@ -45,8 +45,5 @@ COPY app/manager.py /app/manager.py
 # Expose flask app port for docs
 EXPOSE 5000
 
-# Use bridge network in docker
-ENV KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge
-
 # Start the flask app
 CMD ["python", "manager.py"]
