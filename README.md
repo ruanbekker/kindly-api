@@ -23,14 +23,40 @@
 ### 1. **List Clusters**
    - **GET** `/clusters`
    - Returns a list of active clusters.
-   - **Example**:
+   - **Description**: Retrieves a list of currently deployed clusters along with their details (e.g., name, kubeconfig path, host port).
+   - **Example Request**:
      ```bash
      curl http://localhost:5000/clusters
      ```
+   - **Example Response**:
+     ```bash
+     {
+        "kind-abc123": {
+          "name": "kind-abc123",
+          "host_port": 45001,
+          "kubeconfig": "/tmp/kubeconfigs/kind-abc123-config.yaml",
+          "kindconfig": "/tmp/kubeconfigs/kind-abc123-kindconfig.yaml"
+        }
+      }
+      ```
 
 ### 2. **Deploy a Cluster**
    - **POST** `/clusters/deploy`
    - Deploys a new Kubernetes cluster using Kind.
+   - **Description**: Deploys a new Kind Kubernetes cluster. You can customize the deployment by specifying the number of nodes and the Kubernetes version. If no payload is provided, a single-node cluster with the default version is created.
+   - **Payload Options**:
+     - `nodes` (optional): The number of nodes to include in the cluster (default: 1).
+     - `version`: (optional): The Kubernetes version for the cluster (default: v1.28.0).
+   - **Example Request**: 
+     - Deploy a default single-node cluster:
+       ```bash
+       curl -X POST http://localhost:5000/clusters/deploy
+       ```
+     - Deploy a cluster with 2 nodes:
+       ```bash
+       curl -X POST http://localhost:5000/clusters/deploy -d '{"nodes": 2}' -H "Content-Type: application/json"
+       ```
+     
    - **Example**:
      ```bash
      curl -X POST http://localhost:5000/clusters/deploy
