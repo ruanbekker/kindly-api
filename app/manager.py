@@ -47,8 +47,13 @@ def test_docker():
         return jsonify({"error": str(e)}), 500
 
 # Function: Deploy a cluster
-def deploy_cluster(cluster_name, host_port):
+def deploy_cluster(cluster_name, host_port, node_count=1, k8s_version=None):
     node_ip_address = os.environ['NODE_IP_ADDRESS']
+ 
+    # Set the default Kubernetes version if none is provided
+    if k8s_version is None:
+        k8s_version = "v1.27.3"
+
     kind_config = f"""
 ---
 # https://kind.sigs.k8s.io/docs/user/configuration
@@ -64,6 +69,18 @@ networking:
   apiServerPort: {host_port}
 nodes:
   - role: control-plane
+    image: kindest/node:{k8s_version}
+"""
+
+    # Add worker nodes if node_count > 1
+    if node_count > 1:
+        for _ in range(node_count - 1):
+            kind_config += f"""
+  - role: worker
+    image: kindest/node:{k8s_version}
+"""
+
+    kind_config += f"""
 kubeadmConfigPatchesJSON6902:
   - group: kubeadm.k8s.io
     version: v1beta3
@@ -73,6 +90,7 @@ kubeadmConfigPatchesJSON6902:
         path: /apiServer/certSANs/-
         value: {node_ip_address}
 """
+
     kind_config_file = f"{KUBECONFIG_DIR}/{cluster_name}-kindconfig.yaml"
 
     # Write the config file
@@ -129,9 +147,15 @@ def destroy_cluster(cluster_name):
 # API: Deploy a cluster
 @app.route("/clusters/deploy", methods=["POST"])
 def deploy():
+    data = request.get_json() if request.is_json else {}
     cluster_name = generate_cluster_name()
     host_port = find_available_port()
-    deploy_cluster(cluster_name, host_port)
+
+    # Extract the node count and version from the request payload (if provided)
+    node_count = data.get('nodes', 1)
+    k8s_version = data.get('version')
+
+    deploy_cluster(cluster_name, host_port, node_count=node_count, k8s_version=k8s_version)
     return jsonify({"message": "Cluster deployed", "cluster_name": cluster_name, "port": host_port}), 201
 
 # API: Destroy a cluster

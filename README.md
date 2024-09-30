@@ -23,33 +23,82 @@
 ### 1. **List Clusters**
    - **GET** `/clusters`
    - Returns a list of active clusters.
-   - **Example**:
+   - **Description**: Retrieves a list of currently deployed clusters along with their details (e.g., name, kubeconfig path, host port).
+   - **Example Request**:
      ```bash
      curl http://localhost:5000/clusters
      ```
+   - **Example Response**:
+     ```bash
+     {
+        "kind-abc123": {
+          "name": "kind-abc123",
+          "host_port": 45001,
+          "kubeconfig": "/tmp/kubeconfigs/kind-abc123-config.yaml",
+          "kindconfig": "/tmp/kubeconfigs/kind-abc123-kindconfig.yaml"
+        }
+      }
+      ```
 
 ### 2. **Deploy a Cluster**
    - **POST** `/clusters/deploy`
    - Deploys a new Kubernetes cluster using Kind.
-   - **Example**:
-     ```bash
-     curl -X POST http://localhost:5000/clusters/deploy
-     ```
+   - **Description**: Deploys a new Kind Kubernetes cluster. You can customize the deployment by specifying the number of nodes and the Kubernetes version. If no payload is provided, a single-node cluster with the default version is created.
+   - **Payload Options**:
+     - `nodes` (optional): The number of nodes to include in the cluster (default: 1).
+     - `version`: (optional): The Kubernetes version for the cluster (default: v1.28.0).
+   - **Example Request**: 
+     - Deploy a default single-node cluster:
+       ```bash
+       curl -X POST http://localhost:5000/clusters/deploy
+       ```
+     - Deploy a cluster with 2 nodes:
+       ```bash
+       curl -X POST http://localhost:5000/clusters/deploy -d '{"nodes": 2}' -H "Content-Type: application/json"
+       ```
+     - Deploy a cluster with a specific Kubernetes version:
+       ```bash
+       curl -X POST http://localhost:5000/clusters/deploy -d '{"version": "v1.28.13"}' -H "Content-Type: application/json"
+       ```
+     - Deploy a cluster with 2 nodes and a specific Kubernetes version:
+       ```bash
+       curl -X POST http://localhost:5000/clusters/deploy -d '{"nodes": 2, "version": "v1.28.13"}' -H "Content-Type: application/json"
+       ``` 
+   - **Example Response**:
+       ```json
+       {
+         "message": "Cluster deployed",
+         "cluster_name": "kind-abc123",
+         "port": 45001
+       }
+       ```
 
 ### 3. **Retrieve Kubeconfig**
    - **GET** `/clusters/kubeconfig/<cluster-id>`
-   - Fetches the kubeconfig for the specified cluster.
-   - **Example**:
+   - **Description**: Fetches the kubeconfig for the specified cluster.
+   - **Example Request**:
      ```bash
      curl -s http://localhost:5000/clusters/kubeconfig/kind-12345 | jq -r '.kubeconfig'
+     ```
+   - **Example Response**:
+     ```json
+     {
+       "kubeconfig": "apiVersion: v1\nclusters:\n- cluster:\n    certificate-authority-data: ..."
+     }
      ```
 
 ### 4. **Destroy a Cluster**
    - **DELETE** `/clusters/destroy/<cluster-id>`
-   - Destroys the specified Kubernetes cluster.
-   - **Example**:
+   - **Description**: Destroys the specified Kubernetes cluster.
+   - **Example Request**: 
      ```bash
-     curl -X DELETE http://localhost:5000/clusters/destroy/kind-12345
+     curl -XDELETE http://localhost:5000/clusters/destroy/kind-abc123
+     ```
+   - **Example Response**:
+     ```json
+     {
+       "message": "Cluster kind-abc123 destroyed"
+     }
      ```
 
 ---
