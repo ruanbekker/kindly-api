@@ -56,26 +56,49 @@
        ```bash
        curl -X POST http://localhost:5000/clusters/deploy -d '{"nodes": 2}' -H "Content-Type: application/json"
        ```
-     
-   - **Example**:
-     ```bash
-     curl -X POST http://localhost:5000/clusters/deploy
-     ```
+     - Deploy a cluster with a specific Kubernetes version:
+       ```bash
+       curl -X POST http://localhost:5000/clusters/deploy -d '{"version": "v1.28.13"}' -H "Content-Type: application/json"
+       ```
+     - Deploy a cluster with 2 nodes and a specific Kubernetes version:
+       ```bash
+       curl -X POST http://localhost:5000/clusters/deploy -d '{"nodes": 2, "version": "v1.28.13"}' -H "Content-Type: application/json"
+       ``` 
+   - **Example Response**:
+       ```json
+       {
+         "message": "Cluster deployed",
+         "cluster_name": "kind-abc123",
+         "port": 45001
+       }
+       ```
 
 ### 3. **Retrieve Kubeconfig**
    - **GET** `/clusters/kubeconfig/<cluster-id>`
-   - Fetches the kubeconfig for the specified cluster.
-   - **Example**:
+   - **Description**: Fetches the kubeconfig for the specified cluster.
+   - **Example Request**:
      ```bash
      curl -s http://localhost:5000/clusters/kubeconfig/kind-12345 | jq -r '.kubeconfig'
+     ```
+   - **Example Response**:
+     ```json
+     {
+       "kubeconfig": "apiVersion: v1\nclusters:\n- cluster:\n    certificate-authority-data: ..."
+     }
      ```
 
 ### 4. **Destroy a Cluster**
    - **DELETE** `/clusters/destroy/<cluster-id>`
-   - Destroys the specified Kubernetes cluster.
-   - **Example**:
+   - **Description**: Destroys the specified Kubernetes cluster.
+   - **Example Request**: 
      ```bash
-     curl -X DELETE http://localhost:5000/clusters/destroy/kind-12345
+     curl -XDELETE http://localhost:5000/clusters/destroy/kind-abc123
+     ```
+   - **Example Response**:
+     ```json
+     {
+       "message": "Cluster kind-abc123 destroyed"
+     }
      ```
 
 ---
